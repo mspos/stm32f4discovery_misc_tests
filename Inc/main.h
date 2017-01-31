@@ -42,6 +42,7 @@
 
 /* Private define ------------------------------------------------------------*/
 
+
 #define USER_LED_GREEN_Pin GPIO_PIN_12
 #define USER_LED_GREEN_GPIO_Port GPIOD
 #define USER_LED_ORANGE_Pin GPIO_PIN_13

@@ -36,19 +36,23 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-
+#define USER_STRANGE_STATUS 2
+#define USER_TRUE 1
+#define USER_FALSE 0
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+/*variabile che verrà utilizzata per immagazzinare l'informazione sul pushbutton*/
+uint8_t PUSH_STATUS = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void Error_Handler(void);
+static void MX_NVIC_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -77,6 +81,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
 
+  /* Initialize interrupts */
+  MX_NVIC_Init();
+
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -86,17 +93,33 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-	  HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port, USER_LED_GREEN_Pin);
-	  HAL_Delay(500);
-	  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port, USER_LED_BLUE_Pin);
-	  	  HAL_Delay(500);
-	  HAL_GPIO_TogglePin(USER_LED_ORANGE_GPIO_Port, USER_LED_ORANGE_Pin);
-	  	  HAL_Delay(500);
-	  HAL_GPIO_TogglePin(USER_LED_RED_GPIO_Port, USER_LED_RED_Pin);
-	  	  HAL_Delay(500);
 
   /* USER CODE BEGIN 3 */
-
+	  if(PUSH_STATUS==USER_TRUE){
+		  HAL_Delay(500);
+		  HAL_GPIO_WritePin(USER_LED_BLUE_GPIO_Port , USER_LED_BLUE_Pin, GPIO_PIN_RESET);
+		  HAL_Delay(500);
+		  HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin);
+		  HAL_Delay(500);
+	  }else if(PUSH_STATUS==USER_FALSE){
+		  HAL_Delay(500);
+		  HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin, GPIO_PIN_RESET);
+		  HAL_Delay(500);
+		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_BLUE_Pin);
+		  HAL_Delay(500);
+	  }else if(PUSH_STATUS==USER_STRANGE_STATUS){
+		  HAL_Delay(500);
+		  HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin, GPIO_PIN_RESET);
+		  HAL_Delay(500);
+		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_RED_Pin);
+		  HAL_Delay(500);
+	  }else{
+		  HAL_Delay(500);
+		  HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin | USER_LED_RED_Pin, GPIO_PIN_RESET);
+		  HAL_Delay(500);
+		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_RED_Pin | USER_LED_GREEN_Pin | USER_LED_BLUE_Pin | USER_LED_ORANGE_Pin);
+		  HAL_Delay(500);
+	  }
   }
   /* USER CODE END 3 */
 
@@ -153,8 +176,23 @@ void SystemClock_Config(void)
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
-/* USER CODE BEGIN 4 */
+/** NVIC Configuration
+*/
+static void MX_NVIC_Init(void)
+{
+  /* EXTI0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+}
 
+/* USER CODE BEGIN 4 */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	/*implementazione della callback dello user button sulla discovery */
+	if(PUSH_STATUS==USER_FALSE) PUSH_STATUS=USER_TRUE;
+	else if (PUSH_STATUS==USER_TRUE)PUSH_STATUS=USER_FALSE;
+	else PUSH_STATUS = USER_STRANGE_STATUS;
+
+}
 /* USER CODE END 4 */
 
 /**
