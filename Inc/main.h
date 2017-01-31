@@ -36,7 +36,9 @@
   /* Includes ------------------------------------------------------------------*/
 
 /* USER CODE BEGIN Includes */
-
+#include "stdint.h"
+#include "stm32f4xx_hal_rcc.h"
+#include "stm32f4xx_hal_gpio.h"
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
