@@ -33,6 +33,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_hal.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
@@ -46,7 +47,8 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 /*variabile che verrà utilizzata per immagazzinare l'informazione sul pushbutton*/
-uint8_t PUSH_STATUS = 0;
+uint8_t USER_PUSH = 0;
+uint8_t ELAPSED_TIME_PUSH = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -80,12 +82,14 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM14_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
 
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_Base_Start_IT(&htim14);
+  HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin | USER_LED_RED_Pin | USER_LED_ORANGE_Pin, GPIO_PIN_RESET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -95,30 +99,21 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-	  if(PUSH_STATUS==USER_TRUE){
+
+	  /* utilizzo il led blu e verde per interrupt create dall'utente,
+	   * utilizzo il led arancio e rosso per interrupt create dal timer
+	   */
+
+	   if(ELAPSED_TIME_PUSH==USER_TRUE){
 		  HAL_Delay(500);
-		  HAL_GPIO_WritePin(USER_LED_BLUE_GPIO_Port , USER_LED_BLUE_Pin, GPIO_PIN_RESET);
-		  HAL_Delay(500);
-		  HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin);
-		  HAL_Delay(500);
-	  }else if(PUSH_STATUS==USER_FALSE){
-		  HAL_Delay(500);
-		  HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin, GPIO_PIN_RESET);
-		  HAL_Delay(500);
-		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_BLUE_Pin);
-		  HAL_Delay(500);
-	  }else if(PUSH_STATUS==USER_STRANGE_STATUS){
-		  HAL_Delay(500);
-		  HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin, GPIO_PIN_RESET);
-		  HAL_Delay(500);
+
 		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_RED_Pin);
+
+	  }else if(ELAPSED_TIME_PUSH==USER_FALSE){
+
 		  HAL_Delay(500);
-	  }else{
-		  HAL_Delay(500);
-		  HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin | USER_LED_RED_Pin, GPIO_PIN_RESET);
-		  HAL_Delay(500);
-		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_RED_Pin | USER_LED_GREEN_Pin | USER_LED_BLUE_Pin | USER_LED_ORANGE_Pin);
-		  HAL_Delay(500);
+		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_ORANGE_Pin);
+
 	  }
   }
   /* USER CODE END 3 */
@@ -188,10 +183,35 @@ static void MX_NVIC_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	/*implementazione della callback dello user button sulla discovery */
-	if(PUSH_STATUS==USER_FALSE) PUSH_STATUS=USER_TRUE;
-	else if (PUSH_STATUS==USER_TRUE)PUSH_STATUS=USER_FALSE;
-	else PUSH_STATUS = USER_STRANGE_STATUS;
+	if(USER_PUSH==USER_FALSE){
+		USER_PUSH=USER_TRUE;
+		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin , GPIO_PIN_RESET);
 
+		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin);
+	}else if (USER_PUSH==USER_TRUE){
+		USER_PUSH=USER_FALSE;
+		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin , GPIO_PIN_RESET);
+
+		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_BLUE_Pin);
+	}
+	else USER_PUSH = USER_STRANGE_STATUS;
+
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	/*implementazione della callback del counting time del timer scaduto*/
+	if(ELAPSED_TIME_PUSH==USER_FALSE){
+		ELAPSED_TIME_PUSH=USER_TRUE;
+		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_RED_Pin | USER_LED_ORANGE_Pin, GPIO_PIN_RESET);
+
+		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_RED_Pin);
+	}else if (ELAPSED_TIME_PUSH==USER_TRUE){
+		ELAPSED_TIME_PUSH=USER_FALSE;
+		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port ,  USER_LED_RED_Pin | USER_LED_ORANGE_Pin, GPIO_PIN_RESET);
+
+		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_ORANGE_Pin);
+	}
+	else ELAPSED_TIME_PUSH = USER_STRANGE_STATUS;
 }
 /* USER CODE END 4 */
 
