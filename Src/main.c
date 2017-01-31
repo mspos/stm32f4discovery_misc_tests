@@ -86,6 +86,14 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
+	  HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port, USER_LED_GREEN_Pin);
+	  HAL_Delay(500);
+	  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port, USER_LED_BLUE_Pin);
+	  	  HAL_Delay(500);
+	  HAL_GPIO_TogglePin(USER_LED_ORANGE_GPIO_Port, USER_LED_ORANGE_Pin);
+	  	  HAL_Delay(500);
+	  HAL_GPIO_TogglePin(USER_LED_RED_GPIO_Port, USER_LED_RED_Pin);
+	  	  HAL_Delay(500);
 
   /* USER CODE BEGIN 3 */
 
