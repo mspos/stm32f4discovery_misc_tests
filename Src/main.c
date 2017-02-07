@@ -32,9 +32,15 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "functions.h"
+#include "states.h"
+
 #include "stm32f4xx_hal.h"
-#include "tim.h"
 #include "gpio.h"
+#include "tim.h"
+
+#include "stdint.h"
+#include "math.h"
 
 /* USER CODE BEGIN Includes */
 #define USER_STRANGE_STATUS 2
@@ -49,6 +55,14 @@
 /*variabile che verrà utilizzata per immagazzinare l'informazione sul pushbutton*/
 uint8_t USER_PUSH = 0;
 uint8_t ELAPSED_TIME_PUSH = 0;
+uint8_t tick_counter;
+uint16_t divider;
+
+enum states current_state;
+enum states new_state;
+enum guards current_guard;
+enum events current_signal;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -88,8 +102,16 @@ int main(void)
   MX_NVIC_Init();
 
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim14);
+  /* Initialize of FSM signal, state and guards*/
+  current_signal = PERIPH_ALIVE;
+  current_state = INIT;
+  tick_counter = 0;
+  divider = 0;
+  current_guard = NOT_BUSY;
+
   HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin | USER_LED_RED_Pin | USER_LED_ORANGE_Pin, GPIO_PIN_RESET);
+  HAL_TIM_Base_Start_IT(&htim14);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -104,17 +126,24 @@ int main(void)
 	   * utilizzo il led arancio e rosso per interrupt create dal timer
 	   */
 
-	   if(ELAPSED_TIME_PUSH==USER_TRUE){
-		  HAL_Delay(500);
-
-		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_RED_Pin);
-
-	  }else if(ELAPSED_TIME_PUSH==USER_FALSE){
-
-		  HAL_Delay(500);
-		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_ORANGE_Pin);
+//	   if(ELAPSED_TIME_PUSH==USER_TRUE){
+//		  HAL_Delay(500);
+//
+//		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_RED_Pin);
+//
+//	  }else if(ELAPSED_TIME_PUSH==USER_FALSE){
+//
+//		  HAL_Delay(500);
+//		  HAL_GPIO_TogglePin(USER_LED_BLUE_GPIO_Port , USER_LED_ORANGE_Pin);
+//
+//	  }
+	  if(ELAPSED_TIME_PUSH==USER_TRUE){
+		  ELAPSED_TIME_PUSH = USER_FALSE;
+		  new_state = StateMachine(current_signal,current_guard,current_state);
+		  current_state = new_state;
 
 	  }
+
   }
   /* USER CODE END 3 */
 
@@ -187,35 +216,51 @@ static void MX_NVIC_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	/*implementazione della callback dello user button sulla discovery */
-	if(USER_PUSH==USER_FALSE){
-		USER_PUSH=USER_TRUE;
-		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin , GPIO_PIN_RESET);
+//	if(USER_PUSH==USER_FALSE){
+//		USER_PUSH=USER_TRUE;
+//		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin , GPIO_PIN_RESET);
+//
+//		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin);
+//	}else if (USER_PUSH==USER_TRUE){
+//		USER_PUSH=USER_FALSE;
+//		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin , GPIO_PIN_RESET);
+//
+//		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_BLUE_Pin);
+//	}
+//	else USER_PUSH = USER_STRANGE_STATUS;
 
-		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin);
-	}else if (USER_PUSH==USER_TRUE){
-		USER_PUSH=USER_FALSE;
-		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_GREEN_Pin | USER_LED_BLUE_Pin , GPIO_PIN_RESET);
+	/*
+	 * IMPLEMENTAZIONE DI UN SEMPLICE TEST PER LA MACCHINA A STATI
+	 */
 
-		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_BLUE_Pin);
-	}
-	else USER_PUSH = USER_STRANGE_STATUS;
+	//CONTATORE DEI TICK PER GENERARE DEGLI EVENTI FASULLI
+
+
+
 
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+
 	/*implementazione della callback del counting time del timer scaduto*/
-	if(ELAPSED_TIME_PUSH==USER_FALSE){
-		ELAPSED_TIME_PUSH=USER_TRUE;
-		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_RED_Pin | USER_LED_ORANGE_Pin, GPIO_PIN_RESET);
-
-		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_RED_Pin);
-	}else if (ELAPSED_TIME_PUSH==USER_TRUE){
-		ELAPSED_TIME_PUSH=USER_FALSE;
-		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port ,  USER_LED_RED_Pin | USER_LED_ORANGE_Pin, GPIO_PIN_RESET);
-
-		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_ORANGE_Pin);
+//	if(ELAPSED_TIME_PUSH==USER_FALSE){
+//		ELAPSED_TIME_PUSH=USER_TRUE;
+//		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port , USER_LED_RED_Pin | USER_LED_ORANGE_Pin, GPIO_PIN_RESET);
+//
+//		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_RED_Pin);
+//	}else if (ELAPSED_TIME_PUSH==USER_TRUE){
+//		ELAPSED_TIME_PUSH=USER_FALSE;
+//		HAL_GPIO_WritePin(USER_LED_GREEN_GPIO_Port ,  USER_LED_RED_Pin | USER_LED_ORANGE_Pin, GPIO_PIN_RESET);
+//
+//		HAL_GPIO_TogglePin(USER_LED_GREEN_GPIO_Port , USER_LED_ORANGE_Pin);
+//	}
+//	else ELAPSED_TIME_PUSH = USER_STRANGE_STATUS;
+	if(divider<10){
+		//ELAPSED_TIME_PUSH = USER_FALSE;
+		divider++;
+	}else {
+		ELAPSED_TIME_PUSH = USER_TRUE;
 	}
-	else ELAPSED_TIME_PUSH = USER_STRANGE_STATUS;
 }
 /* USER CODE END 4 */
 

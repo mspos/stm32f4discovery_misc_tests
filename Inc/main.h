@@ -36,12 +36,15 @@
   /* Includes ------------------------------------------------------------------*/
 
 /* USER CODE BEGIN Includes */
-#include "stdint.h"
+
+
 
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
 
+
+/* USER CODE BEGIN Private defines */
 #define PUSHBUTTON_INTERRUPT_Pin GPIO_PIN_0
 #define PUSHBUTTON_INTERRUPT_GPIO_Port GPIOA
 #define USER_LED_GREEN_Pin GPIO_PIN_12
@@ -52,8 +55,10 @@
 #define USER_LED_RED_GPIO_Port GPIOD
 #define USER_LED_BLUE_Pin GPIO_PIN_15
 #define USER_LED_BLUE_GPIO_Port GPIOD
-/* USER CODE BEGIN Private defines */
 
+extern enum states current_state;
+extern enum guards current_guard;
+extern enum events current_signal;
 /* USER CODE END Private defines */
 
 /**
