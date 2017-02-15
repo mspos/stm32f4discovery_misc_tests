@@ -9,6 +9,7 @@
 #include "functions.h"
 #include "main.h"
 
+
 #include "stm32f4xx_hal.h"
 #include "gpio.h"
 
@@ -19,9 +20,9 @@
  * Variable definition
  *******/
 
-voidFunc Morbo_Upon_Enter[S_MAX] = {State_Enter_INIT, State_Enter_IDLE, State_Enter_COMPUTE, State_Enter_RESET,State_Enter_CHECK_AND_SEND_DATA};
-voidFunc Morbo_Action_While_In_State[S_MAX] = {State_InState_INIT, State_InState_IDLE, State_InState_COMPUTE, State_InState_RESET,State_InState_CHECK_AND_SEND_DATA};
-voidFunc Morbo_Upon_Exit[S_MAX] = {State_Exit_INIT, State_Exit_IDLE, State_Exit_COMPUTE, State_Exit_RESET,State_Exit_CHECK_AND_SEND_DATA};
+voidFunc Morbo_Upon_Enter[S_MAX] = {State_Enter_START ,State_Enter_INIT, State_Enter_IDLE, State_Enter_COMPUTE, State_Enter_RESET,State_Enter_CHECK_AND_SEND_DATA};
+voidFunc Morbo_Action_While_In_State[S_MAX] = {State_InState_START ,State_InState_INIT, State_InState_IDLE, State_InState_COMPUTE, State_InState_RESET,State_InState_CHECK_AND_SEND_DATA};
+voidFunc Morbo_Upon_Exit[S_MAX] = {State_Exit_START ,State_Exit_INIT, State_Exit_IDLE, State_Exit_COMPUTE, State_Exit_RESET,State_Exit_CHECK_AND_SEND_DATA};
 
 
 /*******
@@ -45,6 +46,20 @@ enum states StateMachine(enum events event, enum guards guard, enum states Curre
 
     switch ( Current_State )
     {
+    case START_MCH:
+    	switch (event )
+    	           {
+
+    	               case (PERIPH_ALIVE):
+    	                  if(guard == NOT_BUSY) Next_State = INIT;
+    	                   	break;
+    	               default:
+    	            	   break;
+    	           }
+
+    break;
+
+
     case INIT:
            switch (event )
            {
@@ -133,6 +148,12 @@ enum states StateMachine(enum events event, enum guards guard, enum states Curre
 /*******
  * States related functions
  ******/
+void State_Enter_START(void){}
+
+void State_InState_START(void){}
+
+void State_Exit_START(void){}
+
 
 void State_Enter_INIT(void){
 	current_guard = BUSY;

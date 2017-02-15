@@ -13,7 +13,7 @@
 * Definition of the states of Morbo's FSM
 ****/
 
-enum states {INIT, IDLE, COMPUTE, RESET_MCH, CHECK_AND_SEND, S_MAX};
+enum states {START_MCH, INIT, IDLE, COMPUTE, RESET_MCH, CHECK_AND_SEND, S_MAX};
 
 /****
 * Definition of the signals that commands transitions of the FSM

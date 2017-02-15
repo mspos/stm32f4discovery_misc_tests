@@ -104,7 +104,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   /* Initialize of FSM signal, state and guards*/
   current_signal = PERIPH_ALIVE;
-  current_state = INIT;
+  current_state = START_MCH;
   tick_counter = 0;
   divider = 0;
   current_guard = NOT_BUSY;

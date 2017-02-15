@@ -42,6 +42,7 @@ voidFunc Morbo_Upon_Exit[S_MAX];
 enum states StateMachine(enum events event, enum guards guard, enum states Current_State);
 //enum states StateMachine(enum events event, enum states Current_State);
 
+void State_Enter_START(void); void State_InState_START(void); void State_Exit_START(void);
 void State_Enter_INIT(void);   void State_Enter_IDLE(void);   void State_Enter_COMPUTE(void);
 void State_InState_INIT(void); void State_InState_IDLE(void); void State_InState_COMPUTE(void);
 void State_Exit_INIT(void);    void State_Exit_IDLE(void);    void State_Exit_COMPUTE(void);
